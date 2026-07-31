@@ -1,2 +1,25 @@
+# dependencies
 node_modules/
-env/
+
+# build outputs
+dist/
+coverage/
+*.tsbuildinfo
+
+# environment variables
+.env
+.env.*
+!.env.example
+
+# logs
+logs/
+*.log
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# test artifacts
+*.tmp
+*.swp
