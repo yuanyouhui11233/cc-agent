@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 任务状态枚举：
+// - PENDING：任务已创建，等待执行
+// - RUNNING：任务正在执行
+// - SUCCEEDED：任务执行成功
+// - FAILED：任务执行失败
+enum TaskStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+// TestRecord：临时测试表，用于验证 Prisma + PostgreSQL 是否连接成功
+model TestRecord {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+}
+
+// Task：保存一次用户请求对应的“任务单”
+// 这张表是后续 Planner / Agent / Report 链路的主记录表
+model Task {
+  id        Int         @id @default(autoincrement())
+  userInput String      @db.Text
+  taskType  String      @default("general")
+  status    TaskStatus  @default(PENDING)
+  agentName String?
+  result    Json?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
