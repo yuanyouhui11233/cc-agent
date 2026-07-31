@@ -27,14 +27,37 @@ model TestRecord {
 }
 
 // Task：保存一次用户请求对应的“任务单”
-// 这张表是后续 Planner / Agent / Report 链路的主记录表
+// 这张表是后续 Planner / Agent / Report 链路的主记录表。
+// 其中：
+// - metadata：存放任务扩展信息，例如模型参数、输入来源、上下文标识等
+// - errorMessage：存放任务失败时的错误说明
+// - result：存放最终输出结果（JSON）
 model Task {
-  id        Int         @id @default(autoincrement())
-  userInput String      @db.Text
-  taskType  String      @default("general")
-  status    TaskStatus  @default(PENDING)
-  agentName String?
-  result    Json?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id           Int         @id @default(autoincrement())
+  userInput    String      @db.Text
+  taskType     String      @default("general")
+  status       TaskStatus  @default(PENDING)
+  agentName    String?
+  metadata     Json?
+  errorMessage String?     @db.Text
+  result       Json?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // TaskLog：任务执行过程中的逐步日志记录
+  logs TaskLog[]
+}
+
+// TaskLog：保存一次任务执行过程中的一条日志记录。
+// 适合记录 Planner / Agent / Tool 每一步的状态变化，便于排查问题或回放执行过程。
+model TaskLog {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  level     String   @default("INFO")
+  stepName  String?
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([taskId, createdAt])
 }
