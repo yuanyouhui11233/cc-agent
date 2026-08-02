@@ -9,12 +9,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest();
 
     const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const payload = exception instanceof HttpException ? exception.getResponse() : "Internal server error";
 
-    const message = exception instanceof HttpException ? exception.getResponse() : "Internal server error";
+    let msg = "Internal server error";
 
-    // 如果 message 是对象（如 ValidationPipe 返回的），提取 message 字段
-    const msg =
-      typeof message === "object" && message !== null ? (message as any).message || JSON.stringify(message) : message;
+    if (typeof payload === "string") {
+      msg = payload;
+    } else if (payload && typeof payload === "object") {
+      const responseBody = payload as { message?: string | string[] };
+
+      if (Array.isArray(responseBody.message)) {
+        msg = responseBody.message.join("；");
+      } else if (typeof responseBody.message === "string") {
+        msg = responseBody.message;
+      } else {
+        msg = JSON.stringify(payload);
+      }
+    }
 
     response.status(status).json({
       code: status === HttpStatus.OK ? 0 : status,
