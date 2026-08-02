@@ -8,6 +8,7 @@ import { MemoryModule } from "./memory/memory.module";
 import { ChainsModule } from "./chains/chains.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { TasksModule } from "./tasks/tasks.module";
+import { AiModule } from "./ai/ai.module";
 import { aiConfig } from "./config/ai.config";
 
 @Module({
@@ -22,6 +23,7 @@ import { aiConfig } from "./config/ai.config";
     ChainsModule,
     PrismaModule,
     TasksModule,
+    AiModule,
   ],
   controllers: [AppController, AgentsController],
   providers: [AgentsService],
