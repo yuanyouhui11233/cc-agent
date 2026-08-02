@@ -11,8 +11,9 @@ export const aiConfig = () => ({
   // AI_API_KEY：当前模型服务的鉴权密钥
   AI_API_KEY: process.env.AI_API_KEY ?? "",
 
-  // AI_MODEL：当前使用的具体模型名
-  AI_MODEL: process.env.AI_MODEL ?? "deepseek-chat",
+  // AI_MODEL：当前使用的具体模型名。
+  // DeepSeek 当前的 API 需要使用其官方模型名，例如 deepseek-v4-pro / deepseek-v4-flash。
+  AI_MODEL: process.env.AI_MODEL ?? "deepseek-v4-pro",
 
   // AI_TEMPERATURE：采样温度，控制输出随机性
   AI_TEMPERATURE: Number(process.env.AI_TEMPERATURE ?? 0.7),
