@@ -11,6 +11,7 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "incremental": true,
+    "strictPropertyInitialization": false,
     "types": ["node"]
   },
   "include": ["src/**/*", "prisma.config.ts"],
