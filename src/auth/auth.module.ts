@@ -3,7 +3,7 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { RedisModule } from "@nestjs-modules/ioredis";
 import { PrismaModule } from "../prisma/prisma.module";
-import { JwtModule } from "@nestjs/jwt";
+import { CommonAuthModule } from "../common/auth/auth.module";
 
 @Module({
   controllers: [AuthController],
@@ -15,10 +15,7 @@ import { JwtModule } from "@nestjs/jwt";
       type: "single",
       url: process.env.REDIS_URL,
     }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: "7d" },
-    }),
+    CommonAuthModule,
   ],
 })
 export class AuthModule {}
