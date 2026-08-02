@@ -1,25 +1,54 @@
-import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Controller, Post, Body, Res, Req } from "@nestjs/common";
+
+import { Response } from "express";
 import { AuthService } from "./auth.service";
-import { SendCodeDto } from "./dto/send-code.dto";
-import { LoginDto } from "./dto/login.dto";
+
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
-  @Post("send-code")
-  @UsePipes(new ValidationPipe({ transform: true }))
-  async sendCode(@Body() body: SendCodeDto) {
-    console.log(body.email);
-    await this.authService.sendCode(body.email);
+  @Post("login")
+  async login(
+    @Body() body: any,
+    @Res({ passthrough: true })
+    res: Response,
+  ) {
+    const result = await this.authService.login(body.email, body.code, body.deviceId);
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 3600 * 1000,
+    });
 
     return {
-      message: "验证码已发送",
+      accessToken: result.accessToken,
+      user: result.user,
     };
   }
 
-  @Post("login")
-  @UsePipes(new ValidationPipe({ transform: true }))
-  login(@Body() body: LoginDto) {
-    return this.authService.login(body.email, body.code);
+  @Post("refresh")
+  async refresh(
+    @Req() req: any,
+    @Body("deviceId")
+    deviceId: string,
+
+    @Res({ passthrough: true })
+    res: Response,
+  ) {
+    const token = req.cookies.refreshToken;
+    const result = await this.authService.refresh(token, deviceId);
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 3600 * 1000,
+    });
+
+    return {
+      accessToken: result.accessToken,
+    };
   }
 }
