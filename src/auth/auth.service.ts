@@ -45,7 +45,7 @@ export class AuthService {
     await this.redis.setex(`verify:${email}`, 300, code);
     await resend.emails.send({
       from: "系统通知 <onboarding@resend.dev>",
-      to: email,
+      to: "delivered@resend.dev",
       subject: "登录验证码",
       html: `
       <p>
@@ -55,9 +55,7 @@ export class AuthService {
       `,
     });
 
-    return {
-      success: true,
-    };
+    return { success: true };
   }
 
   /**
@@ -129,7 +127,7 @@ export class AuthService {
     const tokenHash = this.hashToken(refreshToken);
 
     await this.redis.setex(`refresh:${user.id}:${deviceId}`, 7 * 24 * 3600, tokenHash);
-
+    console.log(accessToken, refreshToken);
     return {
       accessToken,
       refreshToken,

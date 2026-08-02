@@ -1,15 +1,23 @@
-import { Controller, Post, Body, Res, Req } from "@nestjs/common";
-
+import { Controller, Post, Body, Res, Req, UsePipes, ValidationPipe } from "@nestjs/common";
 import { Response } from "express";
 import { AuthService } from "./auth.service";
+import { SendCodeDto } from "./dto/send-code.dto";
+import { LoginDto } from "./dto/login.dto";
 
 @Controller("auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Post("send-code")
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async sendCode(@Body() body: SendCodeDto) {
+    await this.authService.sendCode(body.email);
+  }
+
   @Post("login")
+  @UsePipes(new ValidationPipe({ transform: true }))
   async login(
-    @Body() body: any,
+    @Body() body: LoginDto,
     @Res({ passthrough: true })
     res: Response,
   ) {
@@ -33,7 +41,6 @@ export class AuthController {
     @Req() req: any,
     @Body("deviceId")
     deviceId: string,
-
     @Res({ passthrough: true })
     res: Response,
   ) {
