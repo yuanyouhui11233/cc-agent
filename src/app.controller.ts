@@ -1,10 +1,16 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { AiProviderService } from "./ai/ai-provider.service";
+import { PrismaService } from "./prisma/prisma.service";
 import { TasksService } from "./tasks/tasks.service";
 
 @Controller()
 export class AppController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+    private readonly aiProviderService: AiProviderService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   // 基础健康检查：确认服务本身已经起来
   @Get()
@@ -13,23 +19,36 @@ export class AppController {
   }
 
   // 数据库健康检查：确认 Prisma 可以访问 PostgreSQL
-  // 这里继续保留直接访问 PrismaClient 的方式，用来验证底层连接状态。
+  // 这里通过统一的 PrismaService 进行 ping，避免 Prisma 7 的 driver adapter 初始化问题。
   @Get("db-health")
   async dbHealth() {
-    const prisma = new PrismaClient();
-
     try {
-      await prisma.$queryRaw`SELECT 1`;
-      return { status: "ok", database: "postgresql" };
+      await this.prisma.ping();
+      return { status: "ok", database: "postgresql 连接成功" };
     } catch (error) {
       return {
         status: "error",
         database: "postgresql",
         message: error instanceof Error ? error.message : "Unknown error",
       };
-    } finally {
-      await prisma.$disconnect();
     }
+  }
+
+  // AI 联通性测试接口：用于快速验证当前配置下的 DeepSeek 调用是否真的能通。
+  // 这是一个最小化 smoke test，主要用于确认环境变量、网关地址和鉴权是否正确。
+  @Get("ai-test")
+  async aiTest() {
+    const result = await this.aiProviderService.createChatCompletion([
+      {
+        role: "user",
+        content: "请只回复一句：DeepSeek connectivity check.",
+      },
+    ]);
+
+    return {
+      provider: "deepseek",
+      result,
+    };
   }
 
   // 获取最近创建的任务，供后续 Planner / Agent / Report 链路展示状态使用。

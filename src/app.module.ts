@@ -10,7 +10,10 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { TasksModule } from "./tasks/tasks.module";
 import { AiModule } from "./ai/ai.module";
 import { aiConfig } from "./config/ai.config";
-
+import { AuthModule } from "./auth/auth.module";
+import { UserModule } from "./user/user.module";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +27,12 @@ import { aiConfig } from "./config/ai.config";
     PrismaModule,
     TasksModule,
     AiModule,
+    AuthModule,
+    UserModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", "src", "static"), // 指向 src/static
+      serveRoot: "/static", //访问前缀：http://localhost:3000/static/
+    }),
   ],
   controllers: [AppController, AgentsController],
   providers: [AgentsService],
